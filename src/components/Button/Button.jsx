@@ -3,18 +3,23 @@ import { cl } from "../../functions/setStyles.jsx";
 import styles from "./Button.module.css";
 
 const Button = ({ content, func, link, ms, gs }) => {
+  // Define navigate.
   const navigate = useNavigate();
+
   const clickEvent = () => {
-    // If a valid function was given, run it.
+    // If a valid function was given; run it.
     if (typeof func === "function") {
       func();
     }
 
-    // If link was given, use navigate if link starts with "/", otherwise open new window.
+    // Check if link was given.
     if (link) {
+      // If link starts with "/"; navigate to link.
       if (link[0] == "/") {
         navigate(link);
-      } else {
+      }
+      // Else; open link in new window.
+      else {
         window.open(link, "_blank");
       }
     }
