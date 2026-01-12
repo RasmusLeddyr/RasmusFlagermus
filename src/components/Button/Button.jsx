@@ -26,7 +26,7 @@ const Button = ({ content, func, link, ms, gs }) => {
   };
 
   return (
-    <button className={cl(styles, `${ms} button`, gs)} onClick={clickEvent}>
+    <button className={cl(styles, `${ms} main`, gs)} onClick={clickEvent}>
       {content}
     </button>
   );

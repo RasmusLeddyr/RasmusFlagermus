@@ -1,0 +1,29 @@
+.menu {
+  position: absolute;
+  background-color: red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  --ratW: 2;
+  --ratH: 1;
+  aspect-ratio: var(--ratW) / var(--ratH);
+
+  /* caps inside the container */
+  --maxW: 90cqw;
+  --maxH: 90cqh;
+
+  /* minimum width (optional) */
+  --minW: 256px;
+
+  /* width that would exactly hit maxH at this aspect ratio */
+  --wFromH: calc(var(--maxH) * var(--ratW) / var(--ratH));
+
+  /* the real max width is whichever constraint is smaller */
+  --fitW: min(var(--maxW), var(--wFromH));
+
+  /* final width: between minW and fitW */
+  max-width: clamp(var(--minW), var(--fitW), var(--fitW));
+  height: auto;
+  width: 100%;
+}
