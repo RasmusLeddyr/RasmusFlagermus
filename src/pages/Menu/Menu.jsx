@@ -5,7 +5,7 @@ import styles from "./Menu.module.css";
 const Menu = () => {
   return (
     <>
-      <div className={cl(styles, "menu", "center")}>
+      <div className={cl(styles, "menu", "center fitAspect")}>
         <Button content={"Play"} link={"/game"} />
       </div>
     </>

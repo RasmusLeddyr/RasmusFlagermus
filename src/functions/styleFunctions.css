@@ -1,0 +1,31 @@
+.center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Fit  aspect ratio */
+.fitAspect {
+  /* ! parent container must use "container-type: size" */
+
+  /* Default values */
+  --fa_ratio: 1/1;
+  --fa_maxFill: 1;
+  --fa_maxFillW: 1;
+  --fa_maxFillH: 1;
+  --fa_minW: 0px;
+
+  /* Get final fill sizes */
+  --fillW: min(1, calc(var(--fa_maxFill) * var(--fa_maxFillW)));
+  --fillH: min(1, calc(var(--fa_maxFill) * var(--fa_maxFillH)));
+
+
+  /* Calculate width */
+  --ratioConstraint: calc(var(--fillH) * 100cqh * var(--fa_ratio));
+  --maxWidth: min(var(--fillW) * 100cqw, var(--ratioConstraint));
+
+  /* Apply changes */
+  aspect-ratio: var(--fa_ratio);
+  width: clamp(var(--fa_minW), var(--maxWidth), var(--maxWidth));
+  height: auto;
+}
