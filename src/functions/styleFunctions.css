@@ -19,7 +19,6 @@
   --fillW: min(1, calc(var(--fa_maxFill) * var(--fa_maxFillW)));
   --fillH: min(1, calc(var(--fa_maxFill) * var(--fa_maxFillH)));
 
-
   /* Calculate width */
   --ratioConstraint: calc(var(--fillH) * 100cqh * var(--fa_ratio));
   --maxWidth: min(var(--fillW) * 100cqw, var(--ratioConstraint));
