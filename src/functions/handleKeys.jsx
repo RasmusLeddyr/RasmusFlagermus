@@ -16,8 +16,7 @@ export default function handleKeys() {
 
   // Run once on page load.
   useEffect(() => {
-    const keys = keys_ref.current;
-
+    
     // Handle key press.
     const handleKeyDown = (event) => {
       const key = event.key.toLowerCase();
@@ -33,19 +32,6 @@ export default function handleKeys() {
       const key = event.key.toLowerCase();
       keys_ref.current.delete(key);
     };
-
-    let dx = 0;
-    let dy = 0;
-    if (keys.has("w") || keys.has("arrowup")) dy -= 1;
-    if (keys.has("s") || keys.has("arrowdown")) dy += 1;
-    if (keys.has("a") || keys.has("arrowleft")) dx -= 1;
-    if (keys.has("d") || keys.has("arrowright")) dx += 1;
-
-    if (dx !== 0 || dy !== 0) {
-      const dir_root = Math.hypot(dx, dy);
-      dx /= dir_root;
-      dy /= dir_root;
-    }
 
     // Add listener events upon load.
     document.addEventListener("keydown", handleKeyDown, { passive: false });
