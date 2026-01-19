@@ -2,34 +2,32 @@ import styles from "./Game.module.css";
 import { cl } from "../../functions/setStyles";
 
 export default function Game() {
-  const VIEWPORT_RATIO = "1/1";
-  const MAP_RATIO = "2/1";
+  const ViewportRatio = "1/1";
+  const MapRatio = "3/1";
 
-  const mapOffset = { x: 0, y: 0 };
+  const MapRatioSplit = MapRatio.split("/");
+  const MapOffset = { x: 0, y: 0 };
 
   return (
     <div className={cl(styles, "stage")}>
       <div
-        className={cl(styles, "viewport", "fitAspect centre")}
+        className={cl(styles, "viewport", "setCentre")}
         style={{
-          "--fa_ratio": VIEWPORT_RATIO,
-          "--fa_maxFill": 1,
-          "--fa_maxFillW": 1,
-          "--fa_maxFillH": 1,
-
-          "--map_ratio": MAP_RATIO,
+          aspectRatio: ViewportRatio,
         }}
       >
         <div
           className={cl(styles, "map")}
           style={{
-            transform: `translate(calc(-50% + ${mapOffset.x}px), calc(-50% + ${mapOffset.y}px))`,
+            transform: `translate(calc(-50% + ${MapOffset.x}px), calc(-50% + ${MapOffset.y}px))`,
+            width: `${MapRatioSplit[0]}00%`,
+            height: `${MapRatioSplit[1]}00%`,
           }}
         >
           <div className={cl(styles, "bug")} />
-        </div>
 
-        <div className={cl(styles, "bat", "centre")} />
+          <div className={cl(styles, "bat", "setCentre")} />
+        </div>
       </div>
     </div>
   );

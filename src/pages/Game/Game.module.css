@@ -1,27 +1,21 @@
 .stage {
   position: fixed;
   inset: 0;
-  background: black;
+  background-color: black;
   overflow: hidden;
-
-  container-type: size;
 }
 
 .viewport {
   position: absolute;
   overflow: hidden;
-  background: #000;
+  background: #ff0000;
+  height: 100%;
 }
 
 .map {
   position: absolute;
   left: 50%;
   top: 50%;
-
-  height: 100%;
-  width: 200%;
-
-  transform: translate(-50%, -50%);
 
   background-image: url("../../assets/forest.jpg");
   background-size: cover;
@@ -30,21 +24,22 @@
 
 .bug {
   position: absolute;
-
   left: 50%;
   top: 25%;
 
-  width: 2%;
   aspect-ratio: 1/1;
-  border-radius: 999px;
+  height: 4%;
+
+  border-radius: 1em;
   background: rgb(255, 217, 0);
 }
 
 .bat {
-  position: absolute;
-  width: 4%;
+  position: fixed;
+
   aspect-ratio: 1/1;
+  height: 4%;
+
   background: red;
   border: 2px solid blue;
-  box-sizing: border-box;
 }

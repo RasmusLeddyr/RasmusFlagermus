@@ -2,7 +2,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./global.css";
-import "./functions/styleFunctions.css"
+import "./functions/StyleFuncs.css"
 import {
   createBrowserRouter,
   createRoutesFromElements,
