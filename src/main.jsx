@@ -37,7 +37,5 @@ const routes = createBrowserRouter(
 
 // Place layout under root.
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
     <RouterProvider router={routes} />
-  </StrictMode>
 );

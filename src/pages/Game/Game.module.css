@@ -1,4 +1,4 @@
-.stage {
+.background {
   position: fixed;
   inset: 0;
   background-color: black;
@@ -8,7 +8,6 @@
 .viewport {
   position: absolute;
   overflow: hidden;
-  background: #ff0000;
   height: 100%;
 }
 
@@ -35,7 +34,7 @@
 }
 
 .bat {
-  position: fixed;
+  position: absolute;
 
   aspect-ratio: 1/1;
   height: 4%;
