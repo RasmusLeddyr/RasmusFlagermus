@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
 export default function handleKeys() {
-  const keys_ref = useRef(new Set());
-  const control_keys = [
+  const KeysRef = useRef(new Set());
+  const ControlKeys = [
     "w",
     "a",
     "s",
@@ -16,21 +16,20 @@ export default function handleKeys() {
 
   // Run once on page load.
   useEffect(() => {
-    
     // Handle key press.
     const handleKeyDown = (event) => {
-      const key = event.key.toLowerCase();
-      if (control_keys.includes(key)) {
+      const Key = event.key.toLowerCase();
+      if (ControlKeys.includes(Key)) {
         event.preventDefault();
-        keys_ref.current.add(key);
-        console.log(key);
+        KeysRef.current.add(Key);
+        console.log(Key);
       }
     };
 
     // Handle key release.
     const handleKeyUp = (event) => {
-      const key = event.key.toLowerCase();
-      keys_ref.current.delete(key);
+      const Key = event.key.toLowerCase();
+      KeysRef.current.delete(Key);
     };
 
     // Add listener events upon load.
@@ -44,5 +43,5 @@ export default function handleKeys() {
     };
   }, []);
 
-  return keys_ref;
+  return KeysRef;
 }

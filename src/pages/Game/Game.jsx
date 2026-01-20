@@ -4,45 +4,58 @@ import { cl } from "../../functions/setStyles";
 import handleKeys from "../../functions/handleKeys";
 
 export default function Game() {
-  // Input variables.
-  const viewport_ratio = "1/1";
-  const map_ratio = "3/1";
-  const height_per_sec = 0.5;
+  // Set input variables
+  const ViewportRatio = "1/1";
+  const MapRatio = "3/1";
+  const HeightPerSec = 0.5;
 
-  const map_ratio_split = map_ratio.split("/").map(Number);
+  // Fetch data from handleKeys
+  const KeysRef = handleKeys();
 
-  const [MapOffset, setMapOffset] = useState({ x: 0, y: 0 });
+  // Split map ratio to two number
+  const MapRatioSplit = MapRatio.split("/").map(Number);
 
-  const viewportRef = useRef(null);
-  const [viewSize, setViewSize] = useState({ w: 0, h: 0 });
-
+  // VIEWPORT DATA CONTROL
+  const ViewportRef = useRef(null);
+  const [ViewSize, setViewSize] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
-    const el = viewportRef.current;
-    if (!el) return;
+    // Define viewport as "Elm"
+    const Elm = ViewportRef.current;
+    if (!Elm) return;
 
-    const update = () => {
-      setViewSize({ w: el.clientWidth, h: el.clientHeight });
-    };
-
+    // Fetch viewport size
+    const update = () =>
+      setViewSize({ w: Elm.clientWidth, h: Elm.clientHeight });
     update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
+
+    // Update data when "Elm" is resized
+    const RO = new ResizeObserver(update);
+    RO.observe(Elm);
+
+    // Disconnect RO function upon unload
+    return () => RO.disconnect();
   }, []);
 
-  const keys_ref = handleKeys();
+  // Use ViewSize and MapRatio to control map size
+  const MapSize = {
+    w: ViewSize.w * MapRatioSplit[0],
+    h: ViewSize.h * MapRatioSplit[1],
+  };
 
+  // BAT POSITION CONTROL
+  const [BatPos, setBatPos] = useState({ x: 0.5, y: 0.5 });
   useEffect(() => {
-    let raf = 0;
-    let last = performance.now();
+    let AnimFrame = 0;
+    let LastFrame = performance.now();
 
-    const tick = (now) => {
-      const dt = (now - last) / 1000;
-      last = now;
+    const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-      const keys = keys_ref.current;
+    const tick = (CurrentFrame) => {
+      const dt = (CurrentFrame - LastFrame) / 1000;
+      LastFrame = CurrentFrame;
 
-      // Direction from keys (updates every frame)
+      const keys = KeysRef.current;
+
       let dx = 0;
       let dy = 0;
 
@@ -51,49 +64,50 @@ export default function Game() {
       if (keys.has("a") || keys.has("arrowleft")) dx -= 1;
       if (keys.has("d") || keys.has("arrowright")) dx += 1;
 
-      if (dx !== 0 || dy !== 0) {
-        // Normalize diagonal
+      if ((dx !== 0 || dy !== 0) && ViewSize.h && MapSize.w && MapSize.h) {
         const len = Math.hypot(dx, dy);
         dx /= len;
         dy /= len;
 
-        // Speed: percentage of viewport height per second (converted to px/sec)
-        // Example: 0.6 means "60% of viewport height per second"
-        const px_per_sec = viewSize.h * height_per_sec;
+        const dNormX = (dx * HeightPerSec * dt) / MapRatioSplit[0];
+        const dNormY = (dy * HeightPerSec * dt) / MapRatioSplit[1];
 
-        // Move MAP opposite to intended player direction
-        setMapOffset((p) => ({
-          x: p.x - dx * px_per_sec * dt,
-          y: p.y - dy * px_per_sec * dt,
+        setBatPos((p) => ({
+          x: clamp01(p.x + dNormX),
+          y: clamp01(p.y + dNormY),
         }));
       }
-
-      raf = requestAnimationFrame(tick);
+      AnimFrame = requestAnimationFrame(tick);
     };
+    AnimFrame = requestAnimationFrame(tick);
 
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [keys_ref, viewSize.h]);
+    return () => cancelAnimationFrame(AnimFrame);
+  }, [KeysRef, ViewSize.h, MapSize.w, MapSize.h, HeightPerSec]);
 
   return (
     <div className={cl(styles, "background")}>
       <div
-        ref={viewportRef}
+        ref={ViewportRef}
         className={cl(styles, "viewport", "setCentre")}
-        style={{ aspectRatio: viewport_ratio }}
+        style={{ aspectRatio: ViewportRatio }}
       >
         <div
           className={cl(styles, "map")}
           style={{
-            transform: `translate(calc(-50% + ${MapOffset.x}px), calc(-50% + ${MapOffset.y}px))`,
-            width: `${map_ratio_split[0] * 100}%`,
-            height: `${map_ratio_split[1] * 100}%`,
+            transform: `translate(-50%, -50%)`,
+            width: `${MapRatioSplit[0] * 100}%`,
+            height: `${MapRatioSplit[1] * 100}%`,
           }}
         >
           <div className={cl(styles, "bug")} />
+          <div
+            className={cl(styles, "bat")}
+            style={{
+              left: `${BatPos.x * 100}%`,
+              top: `${BatPos.y * 100}%`,
+            }}
+          />
         </div>
-
-        <div className={cl(styles, "bat", "setCentre")} />
       </div>
     </div>
   );

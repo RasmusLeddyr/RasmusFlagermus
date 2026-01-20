@@ -11,6 +11,7 @@
   height: 100%;
 }
 
+/* Map is centered in the viewport, and cropped by viewport overflow */
 .map {
   position: absolute;
   left: 50%;
@@ -31,6 +32,8 @@
 
   border-radius: 1em;
   background: rgb(255, 217, 0);
+
+  transform: translate(-50%, -50%);
 }
 
 .bat {
@@ -41,4 +44,7 @@
 
   background: red;
   border: 2px solid blue;
+
+  /* critical: left/top act as the bat's center */
+  transform: translate(-50%, -50%);
 }
