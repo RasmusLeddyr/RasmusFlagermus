@@ -4,82 +4,93 @@ import { cl } from "../../functions/setStyles";
 import handleKeys from "../../functions/handleKeys";
 
 export default function Game() {
-  // Set input variables
+  // Set input variables.
   const ViewportRatio = "1/1";
   const MapRatio = "3/1";
   const HeightPerSec = 0.5;
 
-  // Fetch data from handleKeys
+  // Fetch data from handleKeys.
   const KeysRef = handleKeys();
 
-  // Split map ratio to two number
+  // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
 
-  // VIEWPORT DATA CONTROL
+  // viewport data control:
   const ViewportRef = useRef(null);
   const [ViewSize, setViewSize] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
-    // Define viewport as "Elm"
+    // Define viewport as "Elm".
     const Elm = ViewportRef.current;
     if (!Elm) return;
 
-    // Fetch viewport size
-    const update = () =>
+    // Fetch viewport size.
+    const updateViewport = () =>
       setViewSize({ w: Elm.clientWidth, h: Elm.clientHeight });
-    update();
+    updateViewport();
 
-    // Update data when "Elm" is resized
-    const RO = new ResizeObserver(update);
+    // Update viewport data when "Elm" is resized.
+    const RO = new ResizeObserver(updateViewport);
     RO.observe(Elm);
 
-    // Disconnect RO function upon unload
+    // Disconnect RO function upon unload.
     return () => RO.disconnect();
   }, []);
 
-  // Use ViewSize and MapRatio to control map size
+  // Use ViewSize and MapRatio to control map size.
   const MapSize = {
     w: ViewSize.w * MapRatioSplit[0],
     h: ViewSize.h * MapRatioSplit[1],
   };
 
-  // BAT POSITION CONTROL
-  const [BatPos, setBatPos] = useState({ x: 0.5, y: 0.5 });
+  // Centre bat on load.
+  const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
+
+  // Movement control:
   useEffect(() => {
+    // Define frame variables.
     let AnimFrame = 0;
     let LastFrame = performance.now();
 
-    const clamp01 = (v) => Math.max(0, Math.min(1, v));
+    // Keep value between 0 and 1. Return biggest number between 0-v, and smallest between 1-v.
+    const clampPercent = (v) => Math.max(0, Math.min(1, v));
 
-    const tick = (CurrentFrame) => {
-      const dt = (CurrentFrame - LastFrame) / 1000;
+    // Frame ticker:
+    const Tick = (CurrentFrame) => {
+      // Get time since last frame, in seconds. (Uses millisecond timestamp provided by frame.)
+      const Delta = (CurrentFrame - LastFrame) / 1000;
       LastFrame = CurrentFrame;
 
-      const keys = KeysRef.current;
+      // Define direction values.
+      let DireX = 0;
+      let DireY = 0;
 
-      let dx = 0;
-      let dy = 0;
+      // Get direction from held keys.
+      const Keys = KeysRef.current;
+      if (Keys.has("w") || Keys.has("arrowup")) DireY -= 1;
+      if (Keys.has("s") || Keys.has("arrowdown")) DireY += 1;
+      if (Keys.has("a") || Keys.has("arrowleft")) DireX -= 1;
+      if (Keys.has("d") || Keys.has("arrowright")) DireX += 1;
 
-      if (keys.has("w") || keys.has("arrowup")) dy -= 1;
-      if (keys.has("s") || keys.has("arrowdown")) dy += 1;
-      if (keys.has("a") || keys.has("arrowleft")) dx -= 1;
-      if (keys.has("d") || keys.has("arrowright")) dx += 1;
 
-      if ((dx !== 0 || dy !== 0) && ViewSize.h && MapSize.w && MapSize.h) {
-        const len = Math.hypot(dx, dy);
-        dx /= len;
-        dy /= len;
+      // If player is moving, and world data exists:
+      if ((DireX !== 0 || DireY !== 0) && ViewSize.h && MapSize.w && MapSize.h) {
 
-        const dNormX = (dx * HeightPerSec * dt) / MapRatioSplit[0];
-        const dNormY = (dy * HeightPerSec * dt) / MapRatioSplit[1];
+        // Get magnitude to prevent diagonal speed increase.
+        const Magnitude = Math.hypot(DireX, DireY);
 
-        setBatPos((p) => ({
-          x: clamp01(p.x + dNormX),
-          y: clamp01(p.y + dNormY),
+        // Get correct distance based on all data.
+        const DistX = (DireX / Magnitude * HeightPerSec * Delta) / MapRatioSplit[0];
+        const DistY = (DireY / Magnitude * HeightPerSec * Delta) / MapRatioSplit[1];
+
+        // Update bat position.
+        setBatPos((Pos) => ({
+          X: clampPercent(Pos.X + DistX),
+          Y: clampPercent(Pos.Y + DistY),
         }));
       }
-      AnimFrame = requestAnimationFrame(tick);
+      AnimFrame = requestAnimationFrame(Tick);
     };
-    AnimFrame = requestAnimationFrame(tick);
+    AnimFrame = requestAnimationFrame(Tick);
 
     return () => cancelAnimationFrame(AnimFrame);
   }, [KeysRef, ViewSize.h, MapSize.w, MapSize.h, HeightPerSec]);
@@ -103,8 +114,8 @@ export default function Game() {
           <div
             className={cl(styles, "bat")}
             style={{
-              left: `${BatPos.x * 100}%`,
-              top: `${BatPos.y * 100}%`,
+              left: `${BatPos.X * 100}%`,
+              top: `${BatPos.Y * 100}%`,
             }}
           />
         </div>

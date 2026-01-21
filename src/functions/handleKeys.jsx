@@ -22,7 +22,6 @@ export default function handleKeys() {
       if (ControlKeys.includes(Key)) {
         event.preventDefault();
         KeysRef.current.add(Key);
-        console.log(Key);
       }
     };
 
@@ -32,11 +31,11 @@ export default function handleKeys() {
       KeysRef.current.delete(Key);
     };
 
-    // Add listener events upon load.
+    // Add listener events on load.
     document.addEventListener("keydown", handleKeyDown, { passive: false });
     document.addEventListener("keyup", handleKeyUp);
 
-    // Remove listener events upon exit.
+    // Remove listener events on unload.
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
