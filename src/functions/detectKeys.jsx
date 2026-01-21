@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 
-export default function handleKeys() {
+export default function detectKeys() {
+  // Create new reference with an empty set.
   const KeysRef = useRef(new Set());
+
+  // Set accepted inputs.
   const ControlKeys = [
     "w",
     "a",
@@ -14,9 +17,9 @@ export default function handleKeys() {
     " ",
   ];
 
-  // Run once on page load.
+  // Key detector:
   useEffect(() => {
-    // Handle key press.
+    // Detect key press.
     const handleKeyDown = (event) => {
       const Key = event.key.toLowerCase();
       if (ControlKeys.includes(Key)) {
@@ -25,7 +28,7 @@ export default function handleKeys() {
       }
     };
 
-    // Handle key release.
+    // Detect key release.
     const handleKeyUp = (event) => {
       const Key = event.key.toLowerCase();
       KeysRef.current.delete(Key);

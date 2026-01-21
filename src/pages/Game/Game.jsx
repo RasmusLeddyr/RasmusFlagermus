@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import styles from "./Game.module.css";
 import { cl } from "../../functions/setStyles";
-import handleKeys from "../../functions/handleKeys";
+import detectKeys from "../../functions/detectKeys";
+import { moveMap } from "../../functions/moveMap";
 
 export default function Game() {
   // Set input variables.
@@ -10,7 +11,7 @@ export default function Game() {
   const HeightPerSec = 0.5;
 
   // Fetch data from handleKeys.
-  const KeysRef = handleKeys();
+  const KeysRef = detectKeys();
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
@@ -71,16 +72,21 @@ export default function Game() {
       if (Keys.has("a") || Keys.has("arrowleft")) DireX -= 1;
       if (Keys.has("d") || Keys.has("arrowright")) DireX += 1;
 
-
       // If player is moving, and world data exists:
-      if ((DireX !== 0 || DireY !== 0) && ViewSize.h && MapSize.w && MapSize.h) {
-
+      if (
+        (DireX !== 0 || DireY !== 0) &&
+        ViewSize.h &&
+        MapSize.w &&
+        MapSize.h
+      ) {
         // Get magnitude to prevent diagonal speed increase.
         const Magnitude = Math.hypot(DireX, DireY);
 
         // Get correct distance based on all data.
-        const DistX = (DireX / Magnitude * HeightPerSec * Delta) / MapRatioSplit[0];
-        const DistY = (DireY / Magnitude * HeightPerSec * Delta) / MapRatioSplit[1];
+        const DistX =
+          ((DireX / Magnitude) * HeightPerSec * Delta) / MapRatioSplit[0];
+        const DistY =
+          ((DireY / Magnitude) * HeightPerSec * Delta) / MapRatioSplit[1];
 
         // Update bat position.
         setBatPos((Pos) => ({
@@ -95,6 +101,12 @@ export default function Game() {
     return () => cancelAnimationFrame(AnimFrame);
   }, [KeysRef, ViewSize.h, MapSize.w, MapSize.h, HeightPerSec]);
 
+  // Fetch data from moveMap.
+  const { MapPercentX, MapPercentY } = moveMap({
+    BatX: BatPos.X,
+    BatY: BatPos.Y,
+  });
+
   return (
     <div className={cl(styles, "background")}>
       <div
@@ -105,7 +117,9 @@ export default function Game() {
         <div
           className={cl(styles, "map")}
           style={{
-            transform: `translate(-50%, -50%)`,
+            left: `50%`,
+            top: `50%`,
+            transform: `translate(calc(-50% + ${MapPercentX}%), calc(-50% + ${MapPercentY}%))`,
             width: `${MapRatioSplit[0] * 100}%`,
             height: `${MapRatioSplit[1] * 100}%`,
           }}

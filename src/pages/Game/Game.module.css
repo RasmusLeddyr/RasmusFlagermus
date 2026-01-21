@@ -13,9 +13,6 @@
 
 .map {
   position: absolute;
-  left: 50%;
-  top: 50%;
-
   background-image: url("../../assets/forest.jpg");
   background-size: contain;
   background-position: center;
@@ -32,11 +29,13 @@
 
   border-radius: 1em;
   background: rgb(255, 217, 0);
-
 }
 
 .bat {
   position: absolute;
+
+  /* Is this needed? */
+  transform: translate(-50%, -50%);
 
   aspect-ratio: 1/1;
   height: 4%;
