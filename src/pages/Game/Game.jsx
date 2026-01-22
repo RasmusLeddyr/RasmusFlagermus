@@ -101,7 +101,7 @@ export default function Game() {
     return () => cancelAnimationFrame(AnimFrame);
   }, [KeysRef, ViewSize.h, MapSize.w, MapSize.h, HeightPerSec]);
 
-  // Fetch data from moveMap.
+  // Get data from moveMap.
   const { MapPercentX, MapPercentY } = moveMap({
     BatX: BatPos.X,
     BatY: BatPos.Y,
