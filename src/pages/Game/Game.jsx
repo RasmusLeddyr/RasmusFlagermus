@@ -3,15 +3,18 @@ import styles from "./Game.module.css";
 import { cl } from "../../functions/setStyles";
 import detectKeys from "../../functions/detectKeys";
 import { moveMap } from "../../functions/moveMap";
+import { doScan } from "../../functions/doScan";
 
 export default function Game() {
   // Set input variables.
   const ViewportRatio = "1/1";
   const MapRatio = "3/1";
   const HeightPerSec = 0.5;
+  const ScanCooldown = 3;
 
-  // Fetch data from handleKeys.
+  // Create references.
   const KeysRef = detectKeys();
+  const RemainingCooldown = useRef(0);
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
@@ -20,7 +23,7 @@ export default function Game() {
   const ViewportRef = useRef(null);
   const [ViewSize, setViewSize] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
-    // Define viewport as "Elm".
+    // Get viewport. Check if it exists.
     const Elm = ViewportRef.current;
     if (!Elm) return;
 
@@ -46,9 +49,12 @@ export default function Game() {
   // Centre bat on load.
   const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
 
+  // Centre bug on load. TEMPORARY, SHOULD BE RANDOM!
+  const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
+
   // Movement control:
   useEffect(() => {
-    // Define frame variables.
+    // Set empty start variables.
     let AnimFrame = 0;
     let LastFrame = performance.now();
 
@@ -61,12 +67,26 @@ export default function Game() {
       const Delta = (CurrentFrame - LastFrame) / 1000;
       LastFrame = CurrentFrame;
 
+      // Fetch pressed keys.
+      const Keys = KeysRef.current;
+
+      // If scan cooldown is above 0:
+      if (RemainingCooldown.current > 0) {
+        // Subtract with time passed since last frame.
+        RemainingCooldown.current -= Delta;
+      }
+      // If cooldown is 0 or less:
+      else if (Keys.has(" ")) {
+        // Run doScan and reset cooldown.
+        doScan({ BatPos, BugPos });
+        RemainingCooldown.current = ScanCooldown;
+      }
+
       // Define direction values.
       let DireX = 0;
       let DireY = 0;
 
       // Get direction from held keys.
-      const Keys = KeysRef.current;
       if (Keys.has("w") || Keys.has("arrowup")) DireY -= 1;
       if (Keys.has("s") || Keys.has("arrowdown")) DireY += 1;
       if (Keys.has("a") || Keys.has("arrowleft")) DireX -= 1;
@@ -124,7 +144,13 @@ export default function Game() {
             height: `${MapRatioSplit[1] * 100}%`,
           }}
         >
-          <div className={cl(styles, "bug")} />
+          <div
+            className={cl(styles, "bug")}
+            style={{
+              left: `${BugPos.X * 100}%`,
+              top: `${BugPos.Y * 100}%`,
+            }}
+          />
           <div
             className={cl(styles, "bat")}
             style={{
