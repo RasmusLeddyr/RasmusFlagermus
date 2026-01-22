@@ -33,16 +33,9 @@
 
 .bat {
   position: absolute;
-
-  /* Is this needed? */
   transform: translate(-50%, -50%);
 
   aspect-ratio: 1/1;
   height: 4%;
-
   background: red;
-  border: 2px solid blue;
-
-  /* critical: left/top act as the bat's center */
-  transform: translate(-50%, -50%);
 }
