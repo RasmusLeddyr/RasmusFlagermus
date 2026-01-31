@@ -12,16 +12,20 @@ export default function Game() {
   const HeightPerSec = 0.5;
   const ScanCooldown = 3;
 
-  // Create references.
-  const KeysRef = detectKeys();
-  const RemainingCooldown = useRef(0);
-
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
 
-  // viewport data control:
+  // Start values:
+  const KeysRef = detectKeys();
+  const RemainingCooldown = useRef(0);
+  const [Scans, setScans] = useState([]);
   const ViewportRef = useRef(null);
-  const [ViewSize, setViewSize] = useState({ w: 0, h: 0 });
+  const [ViewSize, setViewSize] = useState({ W: 0, H: 0 });
+  const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
+  const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
+  //
+
+  // viewport data control:
   useLayoutEffect(() => {
     // Get viewport. Check if it exists.
     const Elm = ViewportRef.current;
@@ -29,7 +33,7 @@ export default function Game() {
 
     // Fetch viewport size.
     const updateViewport = () =>
-      setViewSize({ w: Elm.clientWidth, h: Elm.clientHeight });
+      setViewSize({ W: Elm.clientWidth, H: Elm.clientHeight });
     updateViewport();
 
     // Update viewport data when "Elm" is resized.
@@ -39,18 +43,13 @@ export default function Game() {
     // Disconnect RO function upon unload.
     return () => RO.disconnect();
   }, []);
+  //
 
   // Use ViewSize and MapRatio to control map size.
   const MapSize = {
-    w: ViewSize.w * MapRatioSplit[0],
-    h: ViewSize.h * MapRatioSplit[1],
+    W: ViewSize.W * MapRatioSplit[0],
+    H: ViewSize.H * MapRatioSplit[1],
   };
-
-  // Centre bat on load.
-  const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
-
-  // Centre bug on load. TEMPORARY, SHOULD BE RANDOM!
-  const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
 
   // Movement control:
   useEffect(() => {
@@ -70,18 +69,6 @@ export default function Game() {
       // Fetch pressed keys.
       const Keys = KeysRef.current;
 
-      // If scan cooldown is above 0:
-      if (RemainingCooldown.current > 0) {
-        // Subtract with time passed since last frame.
-        RemainingCooldown.current -= Delta;
-      }
-      // If cooldown is 0 or less:
-      else if (Keys.has(" ")) {
-        // Run doScan and reset cooldown.
-        doScan({ BatPos, BugPos });
-        RemainingCooldown.current = ScanCooldown;
-      }
-
       // Define direction values.
       let DireX = 0;
       let DireY = 0;
@@ -95,9 +82,9 @@ export default function Game() {
       // If player is moving, and world data exists:
       if (
         (DireX !== 0 || DireY !== 0) &&
-        ViewSize.h &&
-        MapSize.w &&
-        MapSize.h
+        ViewSize.H &&
+        MapSize.W &&
+        MapSize.H
       ) {
         // Get magnitude to prevent diagonal speed increase.
         const Magnitude = Math.hypot(DireX, DireY);
@@ -114,12 +101,27 @@ export default function Game() {
           Y: clampPercent(Pos.Y + DistY),
         }));
       }
+
+      // If scan cooldown is above 0:
+      if (RemainingCooldown.current > 0) {
+        // Subtract with time passed since last frame.
+        RemainingCooldown.current -= Delta;
+      }
+      // If cooldown is 0 or less:
+      else if (Keys.has(" ")) {
+        // Run doScan and reset cooldown.
+        const Scan = doScan({ BatPos, BugPos });
+        setScans((Prev) => [...Prev, Scan]);
+        console.log(Scans)
+        RemainingCooldown.current = ScanCooldown;
+      }
       AnimFrame = requestAnimationFrame(Tick);
     };
     AnimFrame = requestAnimationFrame(Tick);
 
     return () => cancelAnimationFrame(AnimFrame);
-  }, [KeysRef, ViewSize.h, MapSize.w, MapSize.h, HeightPerSec]);
+  }, [KeysRef, ViewSize.H, MapSize.W, MapSize.H, HeightPerSec]);
+  //
 
   // Get data from moveMap.
   const { MapPercentX, MapPercentY } = moveMap({
