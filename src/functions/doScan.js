@@ -1,3 +1,5 @@
+//doScan.js
+
 export function doScan({ BatPos, BugPos }) {
   console.log("Bat position: " + BatPos + " / Bug position: " + BugPos);
 
@@ -7,7 +9,7 @@ export function doScan({ BatPos, BugPos }) {
     ID,
     X: BatPos.X,
     Y: BatPos.Y,
-    GrowLeft: 0.6,
-    LifeLeft: 2.0,
+    GrowLeft: 1.0,
+    LifeLeft: 1.0,
   };
 }

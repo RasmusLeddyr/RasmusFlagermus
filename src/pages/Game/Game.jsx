@@ -1,3 +1,5 @@
+//Game.jsx
+
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import styles from "./Game.module.css";
 import { cl } from "../../functions/setStyles";
@@ -25,6 +27,10 @@ export default function Game() {
   const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
   //
 
+  useEffect(() => {
+    console.log("Scans updated:", Scans);
+  }, [Scans]);
+
   // viewport data control:
   useLayoutEffect(() => {
     // Get viewport. Check if it exists.
@@ -51,8 +57,45 @@ export default function Game() {
     H: ViewSize.H * MapRatioSplit[1],
   };
 
-  // Movement control:
+  // When page updates:
   useEffect(() => {
+    // Update scan objects:
+    const updateScans = (OldScans, Delta) => {
+      let hasChanged = false;
+
+      // Create new scan objects.
+      const NewScans = OldScans.map((ScanObj) => {
+        // Subtract time from GrowLeft.
+        const GrowLeft = Math.max(0, ScanObj.GrowLeft - Delta);
+
+        // Subtract LifeLeft only if GrowLeft is 0.
+        const LifeLeft =
+          GrowLeft === 0
+            ? Math.max(0, ScanObj.LifeLeft - Delta)
+            : ScanObj.LifeLeft;
+
+        // Detect if the new GrowLeft or LifeLeft are different from the old.
+        if (GrowLeft !== ScanObj.GrowLeft || LifeLeft !== ScanObj.LifeLeft) {
+          hasChanged = true;
+        }
+
+        // Return new scan.
+        return { ...ScanObj, GrowLeft, LifeLeft };
+
+        // Filter out scan objects that have 0 LifeLeft.
+      }).filter((ScanObj) => {
+        // Check if LifeLeft is greater than 0.
+        return ScanObj.LifeLeft > 0;
+      });
+
+      // Safety check: If NewScans is not same length as OldScans, hasChanged becomes true.
+      if (NewScans.length !== OldScans.length) hasChanged = true;
+
+      // If hasChanged is true; return NewScans. Else; return OldScans.
+      return hasChanged ? NewScans : OldScans;
+    };
+    //
+
     // Set empty start variables.
     let AnimFrame = 0;
     let LastFrame = performance.now();
@@ -88,33 +131,37 @@ export default function Game() {
       ) {
         // Get magnitude to prevent diagonal speed increase.
         const Magnitude = Math.hypot(DireX, DireY);
-
         // Get correct distance based on all data.
         const DistX =
           ((DireX / Magnitude) * HeightPerSec * Delta) / MapRatioSplit[0];
         const DistY =
           ((DireY / Magnitude) * HeightPerSec * Delta) / MapRatioSplit[1];
-
         // Update bat position.
         setBatPos((Pos) => ({
           X: clampPercent(Pos.X + DistX),
           Y: clampPercent(Pos.Y + DistY),
         }));
       }
+      //
 
+      let hasScanned = false;
       // If scan cooldown is above 0:
       if (RemainingCooldown.current > 0) {
         // Subtract with time passed since last frame.
         RemainingCooldown.current -= Delta;
       }
-      // If cooldown is 0 or less:
+      //
+      // Else, if cooldown is 0 or less:
       else if (Keys.has(" ")) {
         // Run doScan and reset cooldown.
         const Scan = doScan({ BatPos, BugPos });
         setScans((Prev) => [...Prev, Scan]);
-        console.log(Scans)
         RemainingCooldown.current = ScanCooldown;
+        hasScanned = true;
       }
+      //
+
+      if (!hasScanned) setScans((Prev) => updateScans(Prev, Delta));
       AnimFrame = requestAnimationFrame(Tick);
     };
     AnimFrame = requestAnimationFrame(Tick);
@@ -146,6 +193,17 @@ export default function Game() {
             height: `${MapRatioSplit[1] * 100}%`,
           }}
         >
+          {Scans.map((Scan) => (
+            <div
+              key={Scan.ID}
+              className={cl(styles, "scan")}
+              style={{
+                left: `${Scan.X * 100}%`,
+                top: `${Scan.Y * 100}%`,
+              }}
+            />
+          ))}
+
           <div
             className={cl(styles, "bug")}
             style={{

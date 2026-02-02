@@ -44,6 +44,7 @@ export default function detectKeys() {
       document.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
+  //
 
   return KeysRef;
 }

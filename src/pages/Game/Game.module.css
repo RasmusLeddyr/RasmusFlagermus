@@ -39,3 +39,13 @@
   height: 4%;
   background: red;
 }
+
+.scan {
+  position: absolute;
+  transform: translate(-50%, -50%);
+
+  aspect-ratio: 1/1;
+  height: 4%;
+  background: rgb(0, 127, 255);
+  border-radius: 1em;
+}
