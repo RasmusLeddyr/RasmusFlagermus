@@ -1,11 +1,17 @@
 //makeScan.js
 
 export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit }) {
-  console.log("Bat position: " + BatPos + " / Bug position: " + BugPos);
-
   const ID = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
   const GrowSpeed = ScanHeightPerSec / MapRatioSplit[1];
+
+  const Aspect = MapRatioSplit[0] / MapRatioSplit[1];
+
+  const DistanceX = (BugPos.X - BatPos.X) * Aspect;
+  const DistanceY = BugPos.Y - BatPos.Y;
+  const Distance = Math.hypot(DistanceX, DistanceY);
+
+  const GrowLeft = Distance / GrowSpeed;
 
   return {
     ID,
@@ -13,7 +19,7 @@ export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit }) {
     Y: BatPos.Y,
     Radius: 0,
     GrowSpeed,
-    GrowLeft: 1.0,
+    GrowLeft,
     LifeLeft: 1.0,
   };
 }
