@@ -5,19 +5,20 @@ import styles from "./Game.module.css";
 import { cl } from "../../functions/setStyles";
 import detectKeys from "../../functions/detectKeys";
 import { moveMap } from "../../functions/moveMap";
-import { doScan } from "../../functions/doScan";
+import { makeScan } from "../../functions/makeScan";
 
 export default function Game() {
   // Set input variables.
   const ViewportRatio = "1/1";
   const MapRatio = "3/1";
-  const HeightPerSec = 0.5;
+  const BatHeightPerSec = 0.5;
+  const ScanHeightPerSec = 1;
   const ScanCooldown = 3;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
 
-  // Start values:
+  // START VALUES [
   const KeysRef = detectKeys();
   const RemainingCooldown = useRef(0);
   const [Scans, setScans] = useState([]);
@@ -25,13 +26,24 @@ export default function Game() {
   const [ViewSize, setViewSize] = useState({ W: 0, H: 0 });
   const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
   const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
-  //
+  const BatPosRef = useRef(BatPos);
+  const BugPosRef = useRef(BugPos);
+  // ]
 
+  // Create references for bat and bug positions.
+  useEffect(() => {
+    BatPosRef.current = BatPos;
+  }, [BatPos]);
+  useEffect(() => {
+    BugPosRef.current = BugPos;
+  }, [BugPos]);
+
+  // Log scan updates.
   useEffect(() => {
     console.log("Scans updated:", Scans);
   }, [Scans]);
 
-  // viewport data control:
+  // VIEWPORT VALUE CONTROL [
   useLayoutEffect(() => {
     // Get viewport. Check if it exists.
     const Elm = ViewportRef.current;
@@ -49,7 +61,7 @@ export default function Game() {
     // Disconnect RO function upon unload.
     return () => RO.disconnect();
   }, []);
-  //
+  // ]
 
   // Use ViewSize and MapRatio to control map size.
   const MapSize = {
@@ -57,53 +69,62 @@ export default function Game() {
     H: ViewSize.H * MapRatioSplit[1],
   };
 
-  // When page updates:
+  // ON PAGE UPDATE [
   useEffect(() => {
-    // Update scan objects:
+    // Set empty start variables.
+    let AnimFrame = 0;
+    let LastFrame = performance.now();
+
+    // SCAN UPDATER [
     const updateScans = (OldScans, Delta) => {
+      // By default, say that scan list hasn't changed.
       let hasChanged = false;
 
-      // Create new scan objects.
+      // Go through each object in OldScans.
       const NewScans = OldScans.map((ScanObj) => {
-        // Subtract time from GrowLeft.
+        // Take time from GrowLeft.
         const GrowLeft = Math.max(0, ScanObj.GrowLeft - Delta);
 
-        // Subtract LifeLeft only if GrowLeft is 0.
+        // If GrowLeft is 0; take time from LifeLeft. Else; keep LifeLeft unchanged.
         const LifeLeft =
           GrowLeft === 0
             ? Math.max(0, ScanObj.LifeLeft - Delta)
             : ScanObj.LifeLeft;
 
-        // Detect if the new GrowLeft or LifeLeft are different from the old.
-        if (GrowLeft !== ScanObj.GrowLeft || LifeLeft !== ScanObj.LifeLeft) {
+        const Radius =
+          ScanObj.GrowLeft > 0
+            ? ScanObj.Radius + ScanObj.GrowSpeed * Delta
+            : ScanObj.Radius;
+
+        // If GrowLeft, LifeLeft, or Radius have changed:
+        if (
+          GrowLeft !== ScanObj.GrowLeft ||
+          LifeLeft !== ScanObj.LifeLeft ||
+          Radius !== ScanObj.Radius
+        ) {
+          // Say that scan list has changed.
           hasChanged = true;
         }
 
-        // Return new scan.
-        return { ...ScanObj, GrowLeft, LifeLeft };
-
-        // Filter out scan objects that have 0 LifeLeft.
+        // Save objects to NewScans.
+        return { ...ScanObj, GrowLeft, LifeLeft, Radius };
       }).filter((ScanObj) => {
-        // Check if LifeLeft is greater than 0.
+        // Keep only objects with more than 0 LifeLeft.
         return ScanObj.LifeLeft > 0;
       });
 
-      // Safety check: If NewScans is not same length as OldScans, hasChanged becomes true.
+      // If amount of objects is different; say that scan list has changed.
       if (NewScans.length !== OldScans.length) hasChanged = true;
 
       // If hasChanged is true; return NewScans. Else; return OldScans.
       return hasChanged ? NewScans : OldScans;
     };
-    //
+    // ]
 
-    // Set empty start variables.
-    let AnimFrame = 0;
-    let LastFrame = performance.now();
+    // Keep input number between 0 and 1. Return biggest number between 0-v, and smallest between 1-v.
+    const clampPercent = (Num) => Math.max(0, Math.min(1, Num));
 
-    // Keep value between 0 and 1. Return biggest number between 0-v, and smallest between 1-v.
-    const clampPercent = (v) => Math.max(0, Math.min(1, v));
-
-    // Frame ticker:
+    // FRAME TICKER [
     const Tick = (CurrentFrame) => {
       // Get time since last frame, in seconds. (Uses millisecond timestamp provided by frame.)
       const Delta = (CurrentFrame - LastFrame) / 1000;
@@ -133,9 +154,9 @@ export default function Game() {
         const Magnitude = Math.hypot(DireX, DireY);
         // Get correct distance based on all data.
         const DistX =
-          ((DireX / Magnitude) * HeightPerSec * Delta) / MapRatioSplit[0];
+          ((DireX / Magnitude) * BatHeightPerSec * Delta) / MapRatioSplit[0];
         const DistY =
-          ((DireY / Magnitude) * HeightPerSec * Delta) / MapRatioSplit[1];
+          ((DireY / Magnitude) * BatHeightPerSec * Delta) / MapRatioSplit[1];
         // Update bat position.
         setBatPos((Pos) => ({
           X: clampPercent(Pos.X + DistX),
@@ -144,31 +165,58 @@ export default function Game() {
       }
       //
 
-      let hasScanned = false;
+      // Set shouldScan to false by default.
+      let shouldScan = false;
+
+      // SCAN COOLDOWN [
       // If scan cooldown is above 0:
       if (RemainingCooldown.current > 0) {
-        // Subtract with time passed since last frame.
-        RemainingCooldown.current -= Delta;
+        // Subtract with time passed since last frame. (With minimum value of 0.)
+        RemainingCooldown.current = Math.max(
+          0,
+          RemainingCooldown.current - Delta,
+        );
       }
-      //
-      // Else, if cooldown is 0 or less:
+      // Else, if space is being held:
       else if (Keys.has(" ")) {
-        // Run doScan and reset cooldown.
-        const Scan = doScan({ BatPos, BugPos });
-        setScans((Prev) => [...Prev, Scan]);
+        // Request new scan and reset cooldown.
+        shouldScan = true;
         RemainingCooldown.current = ScanCooldown;
-        hasScanned = true;
       }
-      //
+      // ]
 
-      if (!hasScanned) setScans((Prev) => updateScans(Prev, Delta));
+      // SCAN UPDATES [
+      setScans((OldScans) => {
+        // Update old scans.
+        let NewScans = updateScans(OldScans, Delta);
+
+        // If shouldScan is true:
+        if (shouldScan) {
+          // Make new scan at current position.
+          const Scan = makeScan({
+            BatPos: BatPosRef.current,
+            BugPos: BugPosRef.current,
+            ScanHeightPerSec,
+            MapRatioSplit,
+          });
+
+          // Attach new scan to NewScans.
+          NewScans = [...NewScans, Scan];
+        }
+
+        // Return NewScans as Scans inside setScans.
+        return NewScans;
+      });
+      // ]
+
       AnimFrame = requestAnimationFrame(Tick);
     };
-    AnimFrame = requestAnimationFrame(Tick);
+    // ]
 
+    AnimFrame = requestAnimationFrame(Tick);
     return () => cancelAnimationFrame(AnimFrame);
-  }, [KeysRef, ViewSize.H, MapSize.W, MapSize.H, HeightPerSec]);
-  //
+  }, [KeysRef, ViewSize.H, MapSize.W, MapSize.H, BatHeightPerSec]);
+  // ]
 
   // Get data from moveMap.
   const { MapPercentX, MapPercentY } = moveMap({
@@ -176,6 +224,7 @@ export default function Game() {
     BatY: BatPos.Y,
   });
 
+  // Build HTML content.
   return (
     <div className={cl(styles, "background")}>
       <div
@@ -200,6 +249,9 @@ export default function Game() {
               style={{
                 left: `${Scan.X * 100}%`,
                 top: `${Scan.Y * 100}%`,
+
+                width: `${Scan.Radius * 200}vh`,
+                height: `${Scan.Radius * 200}vh`,
               }}
             />
           ))}

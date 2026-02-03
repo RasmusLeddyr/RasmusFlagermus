@@ -46,6 +46,7 @@
 
   aspect-ratio: 1/1;
   height: 4%;
-  background: rgb(0, 127, 255);
-  border-radius: 1em;
+  background: none;
+  outline: 0.5vh solid rgba(0, 127, 255, 0.75);
+  border-radius: 100em;
 }
