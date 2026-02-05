@@ -6,28 +6,33 @@ import { cl } from "../../functions/setStyles";
 import detectKeys from "../../functions/detectKeys";
 import { moveMap } from "../../functions/moveMap";
 import { makeScan } from "../../functions/makeScan";
+import { getRandomPos, testTouch } from "../../functions/BugFunctions";
 
 export default function Game() {
   // Set input variables.
   const ViewportRatio = "1/1";
-  const MapRatio = "3/1";
+  const MapRatio = "2/1.5";
   const BatHeightPerSec = 0.5;
   const ScanHeightPerSec = 1;
-  const ScanCooldown = 3;
+  const ScanCooldown = 1;
+  const BatScale = 3;
+  const BugScale = 2;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
 
   // START VALUES [
   const KeysRef = detectKeys();
-  const RemainingCooldown = useRef(0);
   const [Scans, setScans] = useState([]);
-  const ViewportRef = useRef(null);
   const [ViewSize, setViewSize] = useState({ W: 0, H: 0 });
   const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
   const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
+  const [Points, setPoints] = useState(0);
+  const RemainingCooldown = useRef(0);
+  const ViewportRef = useRef(null);
   const BatPosRef = useRef(BatPos);
   const BugPosRef = useRef(BugPos);
+  const hasTouched = useRef(false);
   // ]
 
   // Create references for bat and bug positions.
@@ -38,10 +43,12 @@ export default function Game() {
     BugPosRef.current = BugPos;
   }, [BugPos]);
 
-  // Log scan updates.
+  // Set bug position on first page load.
   useEffect(() => {
-    console.log("Scans updated:", Scans);
-  }, [Scans]);
+    const Pos = getRandomPos(BugScale);
+    BugPosRef.current = Pos;
+    setBugPos(Pos);
+  }, []);
 
   // VIEWPORT VALUE CONTROL [
   useLayoutEffect(() => {
@@ -209,13 +216,39 @@ export default function Game() {
       });
       // ]
 
+      // BAT-BUG COLLISION [
+      // Check if bat and bug are touching.
+      const isTouching = testTouch(
+        BatPosRef.current,
+        BatScale,
+        BugPosRef.current,
+        BugScale,
+      );
+      // If they are touching, and have not touched recently:
+      if (isTouching && !hasTouched.current) {
+        // Set hasTouched to true.
+        hasTouched.current = true;
+        // Randomise bug position.
+        const Pos = getRandomPos(BugScale);
+        BugPosRef.current = Pos;
+        setBugPos(Pos);
+        // Give point.
+        setPoints((Current) => Current + 1);
+      }
+      // Else; if they are not touching, but have recently touched:
+      else if (!isTouching && hasTouched.current) {
+        // Set hasTouched to false.
+        hasTouched.current = false;
+      }
+      // ]
+
       AnimFrame = requestAnimationFrame(Tick);
     };
     // ]
 
     AnimFrame = requestAnimationFrame(Tick);
     return () => cancelAnimationFrame(AnimFrame);
-  }, [KeysRef, ViewSize.H, MapSize.W, MapSize.H, BatHeightPerSec]);
+  }, [ViewSize.H, MapSize.W, MapSize.H, BatHeightPerSec]);
   // ]
 
   // Get data from moveMap.
@@ -232,6 +265,7 @@ export default function Game() {
         className={cl(styles, "viewport", "setCentre")}
         style={{ aspectRatio: ViewportRatio }}
       >
+        <div className={cl(styles, "points")}>Points: {Points}</div>
         <div
           className={cl(styles, "map")}
           style={{
@@ -249,9 +283,7 @@ export default function Game() {
               style={{
                 left: `${Scan.X * 100}%`,
                 top: `${Scan.Y * 100}%`,
-
-                width: `${Scan.Radius * 200}vh`,
-                height: `${Scan.Radius * 200}vh`,
+                height: `${Scan.Radius * 200}%`,
               }}
             />
           ))}
@@ -261,6 +293,7 @@ export default function Game() {
             style={{
               left: `${BugPos.X * 100}%`,
               top: `${BugPos.Y * 100}%`,
+              height: `${BugScale}%`,
             }}
           />
           <div
@@ -268,6 +301,7 @@ export default function Game() {
             style={{
               left: `${BatPos.X * 100}%`,
               top: `${BatPos.Y * 100}%`,
+              height: `${BatScale}%`,
             }}
           />
         </div>

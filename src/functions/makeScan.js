@@ -7,9 +7,9 @@ export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit }) {
 
   const Aspect = MapRatioSplit[0] / MapRatioSplit[1];
 
-  const DistanceX = (BugPos.X - BatPos.X) * Aspect;
-  const DistanceY = BugPos.Y - BatPos.Y;
-  const Distance = Math.hypot(DistanceX, DistanceY);
+  const DistX = (BugPos.X - BatPos.X) * Aspect;
+  const DistY = BugPos.Y - BatPos.Y;
+  const Distance = Math.hypot(DistX, DistY);
 
   const GrowLeft = Distance / GrowSpeed;
 
@@ -20,6 +20,6 @@ export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit }) {
     Radius: 0,
     GrowSpeed,
     GrowLeft,
-    LifeLeft: 1.0,
+    LifeLeft: 2.0,
   };
 }
