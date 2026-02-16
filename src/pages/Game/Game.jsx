@@ -19,7 +19,7 @@ export default function Game() {
   const ScanCooldown = 2;
   const BatScale = 3;
   const BugScale = 2;
-  const GameTime = 10;
+  const GameTime = 2;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
@@ -150,7 +150,6 @@ export default function Game() {
 
       // Get seconds left.
       const TimeFloored = Math.floor(TimeLeftRef.current);
-      console.log(TimeFloored);
 
       // If seconds is less than last second:
       if (TimeFloored < LastSecondRef.current) {
