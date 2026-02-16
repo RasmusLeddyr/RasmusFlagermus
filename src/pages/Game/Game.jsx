@@ -19,7 +19,7 @@ export default function Game() {
   const ScanCooldown = 2;
   const BatScale = 3;
   const BugScale = 2;
-  const GameTime = 2;
+  const GameTime = 10;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);

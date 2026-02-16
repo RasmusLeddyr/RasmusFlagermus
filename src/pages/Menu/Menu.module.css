@@ -1,12 +1,35 @@
-.menu {
-  position: absolute;
-  background-color: red;
+.main {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  max-width: 256px;
 
-  --fa_ratio: 1/1.5;
-  --fa_minW: 128px;
-  --fa_maxFill: 0.875;
+  height: 100%;
+  width: 100%;
+}
+
+.title {
+  background-color: rgb(238, 213, 176);
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin: auto 0;
+  aspect-ratio: 1/1;
+
+  background-color: rgb(238, 213, 176);
+  border-radius: 16px;
+  padding: 8px;
+}
+
+.list {
+  list-style: none;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px;
+  background-color: rgb(199, 173, 142);
 }

@@ -5,7 +5,7 @@ function getDate() {
   const doPad = (Input) => String(Input).padStart(2, "0");
   const Now = new Date();
 
-  return `${Now.getFullYear()}-${doPad(Now.getMonth() + 1)}-${doPad(Now.getDate())}-${doPad(Now.getHours())}-${doPad(Now.getMinutes())}`;
+  return `${Now.getFullYear()}-${doPad(Now.getMonth() + 1)}-${doPad(Now.getDate())} ${doPad(Now.getHours())}:${doPad(Now.getMinutes())}`;
 }
 
 export function getScores() {
