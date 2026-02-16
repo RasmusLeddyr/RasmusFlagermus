@@ -1,6 +1,7 @@
 //Game.jsx
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Game.module.css";
 import { cl } from "../../functions/setStyles";
 import detectKeys from "../../functions/detectKeys";
@@ -14,25 +15,29 @@ export default function Game() {
   const MapRatio = "2/1.5";
   const BatHeightPerSec = 0.5;
   const ScanHeightPerSec = 1;
-  const ScanCooldown = 1;
+  const ScanCooldown = 2;
   const BatScale = 3;
   const BugScale = 2;
+  const GameTime = 120;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
 
   // START VALUES [
-  const KeysRef = detectKeys();
   const [Scans, setScans] = useState([]);
   const [ViewSize, setViewSize] = useState({ W: 0, H: 0 });
   const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
   const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
   const [Points, setPoints] = useState(0);
+  const [TimeLeft, setTimeLeft] = useState(GameTime);
   const RemainingCooldown = useRef(0);
   const ViewportRef = useRef(null);
   const BatPosRef = useRef(BatPos);
   const BugPosRef = useRef(BugPos);
   const hasTouched = useRef(false);
+  const hasEnded = useRef(false);
+  const Nav = useNavigate();
+  const KeysRef = detectKeys();
   // ]
 
   // Create references for bat and bug positions.
@@ -136,6 +141,9 @@ export default function Game() {
       // Get time since last frame, in seconds. (Uses millisecond timestamp provided by frame.)
       const Delta = (CurrentFrame - LastFrame) / 1000;
       LastFrame = CurrentFrame;
+
+      // Subtract time from countdown.
+      setTimeLeft((Time) => Math.max(0, Time - Delta));
 
       // Fetch pressed keys.
       const Keys = KeysRef.current;
@@ -257,6 +265,23 @@ export default function Game() {
     BatY: BatPos.Y,
   });
 
+  // Convert timer to minutes and seconds.
+  const Minutes = Math.floor(TimeLeft / 60);
+  const Seconds = Math.floor(TimeLeft % 60)
+    .toString()
+    .padStart(2, "0");
+
+  // GAME END [
+  useEffect(() => {
+    if (TimeLeft <= 0 && hasEnded.current == false) {
+      hasEnded.current = true;
+      localStorage.setItem("lastScore", String(Points));
+      console.log("Score: " + Points);
+      Nav("/", { replace: true });
+    }
+  }, [TimeLeft]);
+  // ]
+
   // Build HTML content.
   return (
     <div className={cl(styles, "background")}>
@@ -266,6 +291,10 @@ export default function Game() {
         style={{ aspectRatio: ViewportRatio }}
       >
         <div className={cl(styles, "points")}>Points: {Points}</div>
+        <div className={cl(styles, "timer")}>
+          {Minutes}:{Seconds}
+        </div>
+
         <div
           className={cl(styles, "map")}
           style={{

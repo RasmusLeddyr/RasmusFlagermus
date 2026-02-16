@@ -20,6 +20,6 @@ export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit }) {
     Radius: 0,
     GrowSpeed,
     GrowLeft,
-    LifeLeft: 2.0,
+    LifeLeft: 3,
   };
 }
