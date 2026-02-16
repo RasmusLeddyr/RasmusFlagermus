@@ -4,7 +4,7 @@
   margin: 0;
   padding: 0;
 
-  /* outline: 2px solid blue; */
+  outline: 2px solid blue;
 }
 
 #root {
@@ -12,5 +12,5 @@
   width: 100vw;
   position: relative;
   container-type: size;
+  user-select: none;
 }
-

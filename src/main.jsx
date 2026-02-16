@@ -2,7 +2,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./global.css";
-import "./functions/StyleFuncs.css"
+import "./functions/StyleFuncs.css";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -15,6 +15,7 @@ import {
 // Import pages.
 import Menu from "./pages/Menu/Menu";
 import Game from "./pages/Game/Game";
+import End from "./pages/End/End";
 
 // Define global page layout.
 function AppLayout() {
@@ -31,11 +32,12 @@ const routes = createBrowserRouter(
     <Route element={<AppLayout />}>
       <Route index element={<Menu />} />
       <Route path="game" element={<Game />} />
-    </Route>
-  )
+      <Route path="end" element={<End />} />
+    </Route>,
+  ),
 );
 
 // Place layout under root.
 createRoot(document.getElementById("root")).render(
-    <RouterProvider router={routes} />
+  <RouterProvider router={routes} />,
 );

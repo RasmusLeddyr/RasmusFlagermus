@@ -8,6 +8,7 @@ import detectKeys from "../../functions/detectKeys";
 import { moveMap } from "../../functions/moveMap";
 import { makeScan } from "../../functions/makeScan";
 import { getRandomPos, testTouch } from "../../functions/BugFunctions";
+import { addScore } from "../../functions/Scores";
 
 export default function Game() {
   // Set input variables.
@@ -18,7 +19,7 @@ export default function Game() {
   const ScanCooldown = 2;
   const BatScale = 3;
   const BugScale = 2;
-  const GameTime = 120;
+  const GameTime = 10;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
@@ -36,9 +37,11 @@ export default function Game() {
   const BugPosRef = useRef(BugPos);
   const hasTouched = useRef(false);
   const hasEnded = useRef(false);
+  const TimeLeftRef = useRef(GameTime + 1);
+  const LastSecondRef = useRef(GameTime);
   const Nav = useNavigate();
   const KeysRef = detectKeys();
-  // ]
+  // ] START VALUES
 
   // Create references for bat and bug positions.
   useEffect(() => {
@@ -55,7 +58,7 @@ export default function Game() {
     setBugPos(Pos);
   }, []);
 
-  // VIEWPORT VALUE CONTROL [
+  // VIEWPORT VALUE SYNC [
   useLayoutEffect(() => {
     // Get viewport. Check if it exists.
     const Elm = ViewportRef.current;
@@ -73,7 +76,7 @@ export default function Game() {
     // Disconnect RO function upon unload.
     return () => RO.disconnect();
   }, []);
-  // ]
+  // ] VIEWPORT VALUE SYNC
 
   // Use ViewSize and MapRatio to control map size.
   const MapSize = {
@@ -131,7 +134,7 @@ export default function Game() {
       // If hasChanged is true; return NewScans. Else; return OldScans.
       return hasChanged ? NewScans : OldScans;
     };
-    // ]
+    // ] SCAN UPDATER
 
     // Keep input number between 0 and 1. Return biggest number between 0-v, and smallest between 1-v.
     const clampPercent = (Num) => Math.max(0, Math.min(1, Num));
@@ -143,7 +146,20 @@ export default function Game() {
       LastFrame = CurrentFrame;
 
       // Subtract time from countdown.
-      setTimeLeft((Time) => Math.max(0, Time - Delta));
+      TimeLeftRef.current = Math.max(0, TimeLeftRef.current - Delta);
+
+      // Get seconds left.
+      const TimeFloored = Math.floor(TimeLeftRef.current);
+      console.log(TimeFloored);
+
+      // If seconds is less than last second:
+      if (TimeFloored < LastSecondRef.current) {
+        // Set last second to current second.
+        LastSecondRef.current = TimeFloored;
+
+        // Set time left to seconds.
+        setTimeLeft(TimeFloored);
+      }
 
       // Fetch pressed keys.
       const Keys = KeysRef.current;
@@ -248,16 +264,16 @@ export default function Game() {
         // Set hasTouched to false.
         hasTouched.current = false;
       }
-      // ]
+      // ] BAT-BUG COLLISION
 
       AnimFrame = requestAnimationFrame(Tick);
     };
-    // ]
+    // ] FRAME TICKER
 
     AnimFrame = requestAnimationFrame(Tick);
     return () => cancelAnimationFrame(AnimFrame);
   }, [ViewSize.H, MapSize.W, MapSize.H, BatHeightPerSec]);
-  // ]
+  // ] ON PAGE UPDATE
 
   // Get data from moveMap.
   const { MapPercentX, MapPercentY } = moveMap({
@@ -267,20 +283,21 @@ export default function Game() {
 
   // Convert timer to minutes and seconds.
   const Minutes = Math.floor(TimeLeft / 60);
-  const Seconds = Math.floor(TimeLeft % 60)
-    .toString()
-    .padStart(2, "0");
+  const Seconds = (TimeLeft % 60).toString().padStart(2, "0");
 
   // GAME END [
   useEffect(() => {
-    if (TimeLeft <= 0 && hasEnded.current == false) {
+    // If TimeLeft is below 0, and game hasn't ended:
+    if (TimeLeft == 0 && hasEnded.current == false) {
+      // End game.
       hasEnded.current = true;
-      localStorage.setItem("lastScore", String(Points));
-      console.log("Score: " + Points);
-      Nav("/", { replace: true });
+      // Save score.
+      addScore(Points);
+      // Send user to menu.
+      Nav("/end", { replace: true });
     }
-  }, [TimeLeft]);
-  // ]
+  }, [TimeLeft, Points]);
+  // ] GAME END
 
   // Build HTML content.
   return (
