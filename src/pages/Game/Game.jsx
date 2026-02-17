@@ -19,7 +19,7 @@ export default function Game() {
   const ScanCooldown = 2;
   const BatScale = 3;
   const BugScale = 2;
-  const GameTime = 10;
+  const GameTime = 120;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
@@ -348,7 +348,13 @@ export default function Game() {
               top: `${BatPos.Y * 100}%`,
               height: `${BatScale}%`,
             }}
-          />
+          >
+            <div className={cl(styles, "bat-sprite")}>
+              <div className={cl(styles, "bat-head")} />
+              <div className={cl(styles, "bat-wings")} />
+              <div className={cl(styles, "bat-torso")} />
+            </div>
+          </div>
         </div>
       </div>
     </div>

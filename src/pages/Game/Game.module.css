@@ -35,9 +35,37 @@
 .bat {
   position: absolute;
   transform: translate(-50%, -50%);
+  aspect-ratio: 1/1;
+}
+.bat-sprite {
+  position: absolute;
+
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1/1;
+  width: 500%;
+  background-color: rgba(0, 0, 0, 0);
+}
+.bat-sprite * {
+  position: absolute;
 
   aspect-ratio: 1/1;
-  background: red;
+  width: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+
+  image-rendering: pixelated;
+}
+.bat-head {
+  background-image: url("../../assets/bat-sprites/bat_head.png");
+}
+.bat-wings {
+  background-image: url("../../assets/bat-sprites/bat_wings.png");
+}
+.bat-torso {
+  background-image: url("../../assets/bat-sprites/bat_torso.png");
 }
 
 .scan {
