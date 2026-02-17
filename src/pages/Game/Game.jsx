@@ -20,6 +20,8 @@ export default function Game() {
   const BatScale = 3;
   const BugScale = 2;
   const GameTime = 120;
+  const WingStep = 0.125;
+  const WingPause = 0.25;
 
   // Split map ratio to two number.
   const MapRatioSplit = MapRatio.split("/").map(Number);
@@ -31,6 +33,8 @@ export default function Game() {
   const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
   const [Points, setPoints] = useState(0);
   const [TimeLeft, setTimeLeft] = useState(GameTime);
+  const [WingFrame, setWingFrame] = useState(0);
+  const [HeadDir, setHeadDir] = useState(0);
   const RemainingCooldown = useRef(0);
   const ViewportRef = useRef(null);
   const BatPosRef = useRef(BatPos);
@@ -39,17 +43,27 @@ export default function Game() {
   const hasEnded = useRef(false);
   const TimeLeftRef = useRef(GameTime + 1);
   const LastSecondRef = useRef(GameTime);
-  const Nav = useNavigate();
+  const WingFrameRef = useRef(0);
+  const WingDirRef = useRef(1);
+  const WingTimerRef = useRef(WingPause);
+  const HeadDirRef = useRef(0);
   const KeysRef = detectKeys();
+  const Nav = useNavigate();
   // ] START VALUES
 
-  // Create references for bat and bug positions.
+  // Sync refs with states.
   useEffect(() => {
     BatPosRef.current = BatPos;
   }, [BatPos]);
   useEffect(() => {
     BugPosRef.current = BugPos;
   }, [BugPos]);
+  useEffect(() => {
+    WingFrameRef.current = WingFrame;
+  }, [WingFrame]);
+  useEffect(() => {
+    HeadDirRef.current = HeadDir;
+  }, [HeadDir]);
 
   // Set bug position on first page load.
   useEffect(() => {
@@ -82,6 +96,19 @@ export default function Game() {
   const MapSize = {
     W: ViewSize.W * MapRatioSplit[0],
     H: ViewSize.H * MapRatioSplit[1],
+  };
+
+  const getHeadDirection = (DX, DY) => {
+    if (DX === 0 && DY === 0) return 0;
+    if (DX === 0 && DY < 0) return 1; // up
+    if (DX === 0 && DY > 0) return 2; // down
+    if (DX < 0 && DY === 0) return 3; // left
+    if (DX > 0 && DY === 0) return 4; // right
+    if (DX < 0 && DY < 0) return 5; // up-left
+    if (DX > 0 && DY < 0) return 6; // up-right
+    if (DX < 0 && DY > 0) return 7; // down-left
+    if (DX > 0 && DY > 0) return 8; // down-right
+    return 0;
   };
 
   // ON PAGE UPDATE [
@@ -164,29 +191,30 @@ export default function Game() {
       const Keys = KeysRef.current;
 
       // Define direction values.
-      let DireX = 0;
-      let DireY = 0;
+      let DirX = 0;
+      let DirY = 0;
 
-      // Get direction from held keys.
-      if (Keys.has("w") || Keys.has("arrowup")) DireY -= 1;
-      if (Keys.has("s") || Keys.has("arrowdown")) DireY += 1;
-      if (Keys.has("a") || Keys.has("arrowleft")) DireX -= 1;
-      if (Keys.has("d") || Keys.has("arrowright")) DireX += 1;
+      // Get movement direction from held keys.
+      if (Keys.has("w") || Keys.has("arrowup")) DirY -= 1;
+      if (Keys.has("s") || Keys.has("arrowdown")) DirY += 1;
+      if (Keys.has("a") || Keys.has("arrowleft")) DirX -= 1;
+      if (Keys.has("d") || Keys.has("arrowright")) DirX += 1;
+
+      // Get head direction from movement direction.
+      const NewHeadDir = getHeadDirection(DirX, DirY);
+      if (NewHeadDir !== HeadDirRef.current) {
+        setHeadDir(NewHeadDir);
+      }
 
       // If player is moving, and world data exists:
-      if (
-        (DireX !== 0 || DireY !== 0) &&
-        ViewSize.H &&
-        MapSize.W &&
-        MapSize.H
-      ) {
+      if ((DirX !== 0 || DirY !== 0) && ViewSize.H && MapSize.W && MapSize.H) {
         // Get magnitude to prevent diagonal speed increase.
-        const Magnitude = Math.hypot(DireX, DireY);
+        const Magnitude = Math.hypot(DirX, DirY);
         // Get correct distance based on all data.
         const DistX =
-          ((DireX / Magnitude) * BatHeightPerSec * Delta) / MapRatioSplit[0];
+          ((DirX / Magnitude) * BatHeightPerSec * Delta) / MapRatioSplit[0];
         const DistY =
-          ((DireY / Magnitude) * BatHeightPerSec * Delta) / MapRatioSplit[1];
+          ((DirY / Magnitude) * BatHeightPerSec * Delta) / MapRatioSplit[1];
         // Update bat position.
         setBatPos((Pos) => ({
           X: clampPercent(Pos.X + DistX),
@@ -265,6 +293,26 @@ export default function Game() {
       }
       // ] BAT-BUG COLLISION
 
+      // WING ANIMATION [
+      WingTimerRef.current -= Delta;
+      if (WingTimerRef.current <= 0) {
+        const Frame = WingFrameRef.current;
+        let NextFrame = Frame + WingDirRef.current;
+        if (NextFrame >= 2) {
+          NextFrame = 2;
+          WingDirRef.current = -1;
+          WingTimerRef.current = WingPause;
+        } else if (NextFrame <= 0) {
+          NextFrame = 0;
+          WingDirRef.current = 1;
+          WingTimerRef.current = WingPause;
+        } else {
+          WingTimerRef.current = WingStep;
+        }
+        if (NextFrame !== Frame) setWingFrame(NextFrame);
+      }
+      // ] WING ANIMATION
+
       AnimFrame = requestAnimationFrame(Tick);
     };
     // ] FRAME TICKER
@@ -283,6 +331,28 @@ export default function Game() {
   // Convert timer to minutes and seconds.
   const Minutes = Math.floor(TimeLeft / 60);
   const Seconds = (TimeLeft % 60).toString().padStart(2, "0");
+
+  // Set wing frame class.
+  const WingClass =
+    WingFrame === 0
+      ? "bat-wings-down"
+      : WingFrame === 1
+        ? "bat-wings-mid"
+        : "bat-wings-up";
+
+  // Set head frame class.
+  const HeadClassMap = {
+    0: "bat-head-neutral",
+    1: "bat-head-up",
+    2: "bat-head-down",
+    3: "bat-head-left",
+    4: "bat-head-right",
+    5: "bat-head-up-left",
+    6: "bat-head-up-right",
+    7: "bat-head-down-left",
+    8: "bat-head-down-right",
+  };
+  const HeadClass = HeadClassMap[HeadDir];
 
   // GAME END [
   useEffect(() => {
@@ -350,8 +420,8 @@ export default function Game() {
             }}
           >
             <div className={cl(styles, "bat-sprite")}>
-              <div className={cl(styles, "bat-head")} />
-              <div className={cl(styles, "bat-wings")} />
+              <div className={cl(styles, `${HeadClass}`)} />
+              <div className={cl(styles, `${WingClass}`)} />
               <div className={cl(styles, "bat-torso")} />
             </div>
           </div>

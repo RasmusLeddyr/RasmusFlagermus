@@ -1,3 +1,5 @@
+/* Game.module.css */
+
 .background {
   position: fixed;
   inset: 0;
@@ -32,42 +34,6 @@
   opacity: 0.5;
 }
 
-.bat {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  aspect-ratio: 1/1;
-}
-.bat-sprite {
-  position: absolute;
-
-  transform: translate(-50%, -50%);
-  top: 50%;
-  left: 50%;
-  aspect-ratio: 1/1;
-  width: 500%;
-  background-color: rgba(0, 0, 0, 0);
-}
-.bat-sprite * {
-  position: absolute;
-
-  aspect-ratio: 1/1;
-  width: 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-
-  image-rendering: pixelated;
-}
-.bat-head {
-  background-image: url("../../assets/bat-sprites/bat_head.png");
-}
-.bat-wings {
-  background-image: url("../../assets/bat-sprites/bat_wings.png");
-}
-.bat-torso {
-  background-image: url("../../assets/bat-sprites/bat_torso.png");
-}
-
 .scan {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -98,4 +64,76 @@
 
   color: white;
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Bat */
+
+.bat {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1/1;
+}
+
+.bat-sprite {
+  position: absolute;
+
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1/1;
+  width: 500%;
+  background-color: rgba(0, 0, 0, 0);
+}
+.bat-sprite * {
+  position: absolute;
+
+  aspect-ratio: 1/1;
+  width: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+
+  image-rendering: pixelated;
+}
+
+.bat-torso {
+  background-image: url("../../assets/bat-sprites/bat_torso.png");
+}
+
+.bat-wings-down {
+  background-image: url("../../assets/bat-sprites/bat_wings-down.png");
+}
+.bat-wings-mid {
+  background-image: url("../../assets/bat-sprites/bat_wings.png");
+}
+.bat-wings-up {
+  background-image: url("../../assets/bat-sprites/bat_wings-up.png");
+}
+
+.bat-head-neutral {
+  background-image: url("../../assets/bat-sprites/bat_head.png");
+}
+.bat-head-up {
+  background-image: url("../../assets/bat-sprites/bat_head-up.png");
+}
+.bat-head-down {
+  background-image: url("../../assets/bat-sprites/bat_head-down.png");
+}
+.bat-head-left {
+  background-image: url("../../assets/bat-sprites/bat_head-left.png");
+}
+.bat-head-right {
+  background-image: url("../../assets/bat-sprites/bat_head-right.png");
+}
+.bat-head-up-left {
+  background-image: url("../../assets/bat-sprites/bat_head-up-left.png");
+}
+.bat-head-up-right {
+  background-image: url("../../assets/bat-sprites/bat_head-up-right.png");
+}
+.bat-head-down-left {
+  background-image: url("../../assets/bat-sprites/bat_head-down-left.png");
+}
+.bat-head-down-right {
+  background-image: url("../../assets/bat-sprites/bat_head-down-right.png");
 }
