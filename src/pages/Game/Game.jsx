@@ -23,9 +23,6 @@ export default function Game() {
   const WingStep = 0.125;
   const WingPause = 0.25;
 
-  // Split map ratio to two number.
-  const MapRatioSplit = MapRatio.split("/").map(Number);
-
   // START VALUES [
   const [Scans, setScans] = useState([]);
   const [ViewSize, setViewSize] = useState({ W: 0, H: 0 });
@@ -50,6 +47,9 @@ export default function Game() {
   const KeysRef = detectKeys();
   const Nav = useNavigate();
   // ] START VALUES
+
+  // Split map ratio to two number.
+  const MapRatioSplit = MapRatio.split("/").map(Number);
 
   // Sync refs with states.
   useEffect(() => {
