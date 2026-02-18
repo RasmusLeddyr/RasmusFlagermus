@@ -15,9 +15,10 @@
 
 .map {
   position: absolute;
-  background-image: url("../../assets/forest.jpg");
+  background-image: url("../../assets/night-forest.png");
   background-size: cover;
   background-position: center;
+  image-rendering: pixelated;
 }
 
 .bug {

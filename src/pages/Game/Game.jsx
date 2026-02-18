@@ -5,15 +5,15 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Game.module.css";
 import { cl } from "../../functions/setStyles";
 import detectKeys from "../../functions/detectKeys";
-import { moveMap } from "../../functions/moveMap";
-import { makeScan } from "../../functions/makeScan";
+import { moveMap } from "../../functions/WorldFunctions";
+import { makeScan } from "../../functions/WorldFunctions";
 import { getRandomPos, testTouch } from "../../functions/BugFunctions";
 import { addScore } from "../../functions/Scores";
 
 export default function Game() {
   // Set input variables.
   const ViewportRatio = "1/1";
-  const MapRatio = "2/1.5";
+  const MapRatio = "3/1.5";
   const BatHeightPerSec = 0.5;
   const ScanHeightPerSec = 1;
   const ScanCooldown = 2;
