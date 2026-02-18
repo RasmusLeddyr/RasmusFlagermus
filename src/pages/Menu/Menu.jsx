@@ -5,9 +5,12 @@ import { getScores } from "../../functions/Scores";
 
 export default function Menu() {
   const Scores = getScores();
+
   return (
     <div className={cl(styles, "main")}>
       <h1 className={cl(styles, "title")}>Get Fat, Bat!</h1>
+      <p>Move: WASD / Arrow keys</p>
+      <p>Echo-locate: Spacebar</p>
       <div className={cl(styles, "menu")}>
         <Button content={"PLAY"} link={"/game"} ms={"play"} />
 

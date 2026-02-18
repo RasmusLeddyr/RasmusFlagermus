@@ -137,3 +137,15 @@
 .bat-head-down-right {
   background-image: url("../../assets/bat-sprites/bat_head-down-right.png");
 }
+
+.sprite-preload {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.sprite-preload > div {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+}

@@ -65,12 +65,14 @@ export default function Game() {
     HeadDirRef.current = HeadDir;
   }, [HeadDir]);
 
-  // Set bug position on first page load.
+  // FIRST PAGE LOAD [
   useEffect(() => {
+    // Randomise bug position.
     const Pos = getRandomPos(BugScale);
     BugPosRef.current = Pos;
     setBugPos(Pos);
   }, []);
+  // ] FIRST PAGE LOAD
 
   // VIEWPORT VALUE SYNC [
   useLayoutEffect(() => {
@@ -391,6 +393,22 @@ export default function Game() {
             height: `${MapRatioSplit[1] * 100}%`,
           }}
         >
+          <div className={cl(styles, "sprite-preload")}>
+            <div className={cl(styles, "bat-head-neutral")} />
+            <div className={cl(styles, "bat-head-up")} />
+            <div className={cl(styles, "bat-head-down")} />
+            <div className={cl(styles, "bat-head-left")} />
+            <div className={cl(styles, "bat-head-right")} />
+            <div className={cl(styles, "bat-head-up-left")} />
+            <div className={cl(styles, "bat-head-up-right")} />
+            <div className={cl(styles, "bat-head-down-left")} />
+            <div className={cl(styles, "bat-head-down-right")} />
+            <div className={cl(styles, "bat-wings-down")} />
+            <div className={cl(styles, "bat-wings-mid")} />
+            <div className={cl(styles, "bat-wings-up")} />
+            <div className={cl(styles, "bat-torso")} />
+          </div>
+
           {Scans.map((Scan) => (
             <div
               key={Scan.ID}
