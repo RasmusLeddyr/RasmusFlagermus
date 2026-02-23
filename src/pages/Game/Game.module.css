@@ -32,7 +32,7 @@
 
   border-radius: 1em;
   background: rgb(255, 217, 0);
-  opacity: 0.5;
+  opacity: 1;
 }
 
 .scan {
@@ -40,9 +40,18 @@
   transform: translate(-50%, -50%);
   aspect-ratio: 1/1;
 
-  background: none;
-  outline: 0.5vh solid rgba(0, 127, 255, 0.75);
+  /* outline: 0.5vh solid rgba(0, 127, 255, 0.75); */
+  background: radial-gradient(
+    circle,
+    rgba(42, 123, 155, 1) 0%,
+    rgba(87, 199, 133, 1) 50%,
+    rgba(237, 221, 83, 1) 100%
+  );
+  opacity: 0.5;
   border-radius: 100%;
+}
+.scan.fading {
+  opacity: 0;
 }
 
 .points {

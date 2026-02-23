@@ -17,6 +17,7 @@ export default function Game() {
   const BatHeightPerSec = 0.5;
   const ScanHeightPerSec = 1;
   const ScanCooldown = 2;
+  const ScanLife = 3;
   const BatScale = 3;
   const BugScale = 2;
   const GameTime = 120;
@@ -119,39 +120,42 @@ export default function Game() {
     let AnimFrame = 0;
     let LastFrame = performance.now();
 
-    // SCAN UPDATER [
+    // SCAN UPDATE LOGIC [
     const updateScans = (OldScans, Delta) => {
       // By default, say that scan list hasn't changed.
       let hasChanged = false;
 
       // Go through each object in OldScans.
       const NewScans = OldScans.map((ScanObj) => {
-        // Take time from GrowLeft.
-        const GrowLeft = Math.max(0, ScanObj.GrowLeft - Delta);
+        // Define variables.
+        let GrowLeft = ScanObj.GrowLeft;
+        let LifeLeft = ScanObj.LifeLeft;
+        let Fading = ScanObj.Fading;
+        let Ready = true;
 
-        // If GrowLeft is 0; take time from LifeLeft. Else; keep LifeLeft unchanged.
-        const LifeLeft =
-          GrowLeft === 0
-            ? Math.max(0, ScanObj.LifeLeft - Delta)
-            : ScanObj.LifeLeft;
+        // If GrowLeft is above 0; subtract time from GrowLeft.
+        if (GrowLeft > 0) {
+          GrowLeft = Math.max(0, GrowLeft - Delta);
+        }
+        // Else; subtract time from LifeLeft.
+        else {
+          LifeLeft = Math.max(0, LifeLeft - Delta);
+          // If fading is false; set to true.
+          if (Fading == false) Fading = true;
+        }
 
-        const Radius =
-          ScanObj.GrowLeft > 0
-            ? ScanObj.Radius + ScanObj.GrowSpeed * Delta
-            : ScanObj.Radius;
-
-        // If GrowLeft, LifeLeft, or Radius have changed:
+        // If GrowLeft, LifeLeft, Fading, or Ready have changed:
         if (
           GrowLeft !== ScanObj.GrowLeft ||
           LifeLeft !== ScanObj.LifeLeft ||
-          Radius !== ScanObj.Radius
+          Fading !== ScanObj.Fading
         ) {
           // Say that scan list has changed.
           hasChanged = true;
         }
 
         // Save objects to NewScans.
-        return { ...ScanObj, GrowLeft, LifeLeft, Radius };
+        return { ...ScanObj, GrowLeft, LifeLeft, Fading, Ready };
       }).filter((ScanObj) => {
         // Keep only objects with more than 0 LifeLeft.
         return ScanObj.LifeLeft > 0;
@@ -163,7 +167,7 @@ export default function Game() {
       // If hasChanged is true; return NewScans. Else; return OldScans.
       return hasChanged ? NewScans : OldScans;
     };
-    // ] SCAN UPDATER
+    // ] SCAN UPDATE LOGIC
 
     // Keep input number between 0 and 1. Return biggest number between 0-v, and smallest between 1-v.
     const clampPercent = (Num) => Math.max(0, Math.min(1, Num));
@@ -243,7 +247,7 @@ export default function Game() {
         shouldScan = true;
         RemainingCooldown.current = ScanCooldown;
       }
-      // ]
+      // ] SCAN COOLDOWN
 
       // SCAN UPDATES [
       setScans((OldScans) => {
@@ -258,6 +262,7 @@ export default function Game() {
             BugPos: BugPosRef.current,
             ScanHeightPerSec,
             MapRatioSplit,
+            ScanLife,
           });
 
           // Attach new scan to NewScans.
@@ -267,7 +272,7 @@ export default function Game() {
         // Return NewScans as Scans inside setScans.
         return NewScans;
       });
-      // ]
+      // ] SCAN UPDATES
 
       // BAT-BUG COLLISION [
       // Check if bat and bug are touching.
@@ -412,11 +417,12 @@ export default function Game() {
           {Scans.map((Scan) => (
             <div
               key={Scan.ID}
-              className={cl(styles, "scan")}
+              className={cl(styles, `scan ${Scan.Fading ? "fading" : ""}`)}
               style={{
+                transition: `height ${Scan.GrowLeft}s linear, opacity ${ScanLife}s`,
                 left: `${Scan.X * 100}%`,
                 top: `${Scan.Y * 100}%`,
-                height: `${Scan.Radius * 200}%`,
+                height: `${Scan.Ready ? Scan.Radius * 200 : 0}%`,
               }}
             />
           ))}

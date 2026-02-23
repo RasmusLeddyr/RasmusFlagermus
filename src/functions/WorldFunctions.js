@@ -12,7 +12,7 @@ export function moveMap({ BatX, BatY }) {
   };
 }
 
-export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit }) {
+export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit, ScanLife }) {
   const ID = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
   const GrowSpeed = ScanHeightPerSec / MapRatioSplit[1];
@@ -26,9 +26,11 @@ export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit }) {
     ID,
     X: BatPos.X,
     Y: BatPos.Y,
-    Radius: 0,
     GrowSpeed,
     GrowLeft,
-    LifeLeft: 3,
+    LifeLeft: ScanLife,
+    Radius: Distance,
+    Fading: false,
+    Ready: false,
   };
 }
