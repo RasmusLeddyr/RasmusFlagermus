@@ -16,10 +16,12 @@ export default function Game() {
   const MapRatio = "3/1.5";
   const BatHeightPerSec = 0.5;
   const ScanHeightPerSec = 1;
-  const ScanCooldown = 2;
   const ScanLife = 3;
+  const ScanCooldown = 2;
   const BatScale = 3;
   const BugScale = 2;
+  const MothScale = 8;
+  const MothLife = 4;
   const GameTime = 180;
   const WingStep = 0.125;
   const WingPause = 0.25;
@@ -38,6 +40,7 @@ export default function Game() {
   const ViewportRef = useRef(null);
   const BatPosRef = useRef(BatPos);
   const BugPosRef = useRef(BugPos);
+  const BugElmRef = useRef(null);
   const hasTouched = useRef(false);
   const hasEnded = useRef(false);
   const TimeLeftRef = useRef(GameTime + 1);
@@ -121,55 +124,6 @@ export default function Game() {
     let AnimFrame = 0;
     let LastFrame = performance.now();
 
-    // SCAN UPDATE LOGIC [
-    const updateScans = (OldScans, Delta) => {
-      // By default, say that scan list hasn't changed.
-      let hasChanged = false;
-
-      // Go through each object in OldScans.
-      const NewScans = OldScans.map((ScanObj) => {
-        // Define variables.
-        let GrowLeft = ScanObj.GrowLeft;
-        let LifeLeft = ScanObj.LifeLeft;
-        let Fading = ScanObj.Fading;
-        let Ready = true;
-
-        // If GrowLeft is above 0; subtract time from GrowLeft.
-        if (GrowLeft > 0) {
-          GrowLeft = Math.max(0, GrowLeft - Delta);
-        }
-        // Else; subtract time from LifeLeft.
-        else {
-          LifeLeft = Math.max(0, LifeLeft - Delta);
-          // If fading is false; set to true.
-          if (Fading == false) Fading = true;
-        }
-
-        // If GrowLeft, LifeLeft, Fading, or Ready have changed:
-        if (
-          GrowLeft !== ScanObj.GrowLeft ||
-          LifeLeft !== ScanObj.LifeLeft ||
-          Fading !== ScanObj.Fading
-        ) {
-          // Say that scan list has changed.
-          hasChanged = true;
-        }
-
-        // Save objects to NewScans.
-        return { ...ScanObj, GrowLeft, LifeLeft, Fading, Ready };
-      }).filter((ScanObj) => {
-        // Keep only objects with more than 0 LifeLeft.
-        return ScanObj.LifeLeft > 0;
-      });
-
-      // If amount of objects is different; say that scan list has changed.
-      if (NewScans.length !== OldScans.length) hasChanged = true;
-
-      // If hasChanged is true; return NewScans. Else; return OldScans.
-      return hasChanged ? NewScans : OldScans;
-    };
-    // ] SCAN UPDATE LOGIC
-
     // Keep input number between 0 and 1. Return biggest number between 0-v, and smallest between 1-v.
     const clampPercent = (Num) => Math.max(0, Math.min(1, Num));
 
@@ -250,7 +204,56 @@ export default function Game() {
       }
       // ] SCAN COOLDOWN
 
-      // SCAN UPDATES [
+      // SCAN UPDATE LOGIC [
+      const updateScans = (OldScans, Delta) => {
+        // By default, say that scan list hasn't changed.
+        let hasChanged = false;
+
+        // Go through each object in OldScans.
+        const NewScans = OldScans.map((ScanObj) => {
+          // Define variables.
+          let GrowLeft = ScanObj.GrowLeft;
+          let LifeLeft = ScanObj.LifeLeft;
+          let Fading = ScanObj.Fading;
+          let Ready = true;
+
+          // If GrowLeft is above 0; subtract time from GrowLeft.
+          if (GrowLeft > 0) {
+            GrowLeft = Math.max(0, GrowLeft - Delta);
+          }
+          // Else; subtract time from LifeLeft.
+          else {
+            LifeLeft = Math.max(0, LifeLeft - Delta);
+            // If fading is false; set to true.
+            if (Fading == false) Fading = true;
+          }
+
+          // If GrowLeft, LifeLeft, Fading, or Ready have changed:
+          if (
+            GrowLeft !== ScanObj.GrowLeft ||
+            LifeLeft !== ScanObj.LifeLeft ||
+            Fading !== ScanObj.Fading
+          ) {
+            // Say that scan list has changed.
+            hasChanged = true;
+          }
+
+          // Save objects to NewScans.
+          return { ...ScanObj, GrowLeft, LifeLeft, Fading, Ready };
+        }).filter((ScanObj) => {
+          // Keep only objects with more than 0 LifeLeft.
+          return ScanObj.LifeLeft > 0;
+        });
+
+        // If amount of objects is different; say that scan list has changed.
+        if (NewScans.length !== OldScans.length) hasChanged = true;
+
+        // If hasChanged is true; return NewScans. Else; return OldScans.
+        return hasChanged ? NewScans : OldScans;
+      };
+      // ] SCAN UPDATE LOGIC
+
+      // UPDATE SCAN LIST [
       setScans((OldScans) => {
         // Update old scans.
         let NewScans = updateScans(OldScans, Delta);
@@ -273,7 +276,7 @@ export default function Game() {
         // Return NewScans as Scans inside setScans.
         return NewScans;
       });
-      // ] SCAN UPDATES
+      // ] UPDATE SCAN LIST
 
       // BAT-BUG COLLISION [
       // Check if bat and bug are touching.
@@ -287,10 +290,34 @@ export default function Game() {
       if (isTouching && !hasTouched.current) {
         // Set hasTouched to true.
         hasTouched.current = true;
+
+        // MOTH SPRITE [
+        // Get rendered elements.
+        const BugElm = BugElmRef.current.getBoundingClientRect();
+        const ViewportElm = ViewportRef.current.getBoundingClientRect();
+        // Get centre position of bug. (Default is top-left corner.)
+        const BugPosX = BugElm.left + BugElm.width / 2;
+        const BugPosY = BugElm.top + BugElm.height / 2;
+        // Get bug centre's distance from top and left of viewport.
+        const ViewX = (BugPosX - ViewportElm.left) / ViewportElm.width;
+        const ViewY = (BugPosY - ViewportElm.top) / ViewportElm.height;
+        // Create new moth.
+        setMoths((OldMoths) => [
+          ...OldMoths,
+          {
+            ID: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+            X: ViewX,
+            Y: ViewY,
+            LifeLeft: MothLife,
+          },
+        ]);
+        // ] MOTH SPRITE
+
         // Randomise bug position.
         const Pos = getRandomPos(BugScale);
         BugPosRef.current = Pos;
         setBugPos(Pos);
+
         // Give point.
         setPoints((Current) => Current + 1);
       }
@@ -300,6 +327,29 @@ export default function Game() {
         hasTouched.current = false;
       }
       // ] BAT-BUG COLLISION
+
+      // MOTH UPDATE LOGIC [
+      const updateMoths = (OldMoths, Delta) => {
+        let hasChanged = false;
+
+        const NewMoths = OldMoths.map((MothObj) => {
+          const LifeLeft = Math.max(0, MothObj.LifeLeft - Delta);
+
+          if (LifeLeft !== MothObj.LifeLeft) {
+            hasChanged = true;
+          }
+
+          return { ...MothObj, LifeLeft };
+        }).filter((MothObj) => MothObj.LifeLeft > 0);
+
+        if (NewMoths.length !== OldMoths.length) hasChanged = true;
+
+        return hasChanged ? NewMoths : OldMoths;
+      };
+      // ] MOTH UPDATE LOGIC
+
+      // Update moth list.
+      setMoths((OldMoths) => updateMoths(OldMoths, Delta));
 
       // WING ANIMATION [
       WingTimerRef.current -= Delta;
@@ -389,6 +439,18 @@ export default function Game() {
           {Minutes}:{Seconds}
         </div>
 
+        {Moths.map((Moth) => (
+          <div
+            key={Moth.ID}
+            className={cl(styles, "moth")}
+            style={{
+              left: `${Moth.X * 100}%`,
+              top: `${Moth.Y * 100}%`,
+              height: `${MothScale}%`,
+            }}
+          />
+        ))}
+
         <div
           className={cl(styles, "map")}
           style={{
@@ -429,6 +491,7 @@ export default function Game() {
           ))}
 
           <div
+            ref={BugElmRef}
             className={cl(styles, "bug")}
             style={{
               left: `${BugPos.X * 100}%`,

@@ -24,15 +24,24 @@
 .bug {
   position: absolute;
   transform: translate(-50%, -50%);
-  left: 50%;
-  top: 25%;
 
   aspect-ratio: 1/1;
-  height: 4%;
 
   border-radius: 1em;
   background: rgb(255, 217, 0);
   opacity: 1;
+}
+.moth {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1/1;
+  z-index: 2;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  image-rendering: pixelated;
+
+  background-image: url("../../assets/moth.png");
 }
 
 .scan {

@@ -26,7 +26,6 @@ export function makeScan({ BatPos, BugPos, ScanHeightPerSec, MapRatioSplit, Scan
     ID,
     X: BatPos.X,
     Y: BatPos.Y,
-    GrowSpeed,
     GrowLeft,
     LifeLeft: ScanLife,
     Radius: Distance,

@@ -21,7 +21,7 @@ export function testTouch(BatPos, BatScale, BugPos, BugScale) {
   const Distance = Math.hypot(DistX, DistY);
 
   // Calculate touch distance by combining bix sizes, turned to 0-1 space radiuses.
-  const TouchDist = (BatScale + BugScale) / 100 / 2 ;
+  const TouchDist = (BatScale + BugScale) / 100 / 2;
 
   // If Distance is equal to or below TouchDist; return true. Else; return false.
   if (Distance <= TouchDist) {
