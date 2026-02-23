@@ -21,7 +21,8 @@ export default function Game() {
   const BatScale = 3;
   const BugScale = 2;
   const MothScale = 8;
-  const MothLife = 4;
+  const MothDisplay = 0.5;
+  const MothMove = 0.375;
   const GameTime = 180;
   const WingStep = 0.125;
   const WingPause = 0.25;
@@ -308,7 +309,8 @@ export default function Game() {
             ID: crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
             X: ViewX,
             Y: ViewY,
-            LifeLeft: MothLife,
+            LifeLeft: MothDisplay + MothMove,
+            Moving: 0,
           },
         ]);
         // ] MOTH SPRITE
@@ -331,15 +333,19 @@ export default function Game() {
       // MOTH UPDATE LOGIC [
       const updateMoths = (OldMoths, Delta) => {
         let hasChanged = false;
-
         const NewMoths = OldMoths.map((MothObj) => {
           const LifeLeft = Math.max(0, MothObj.LifeLeft - Delta);
+
+          let Moving = MothObj.Moving;
+          if (Moving == 0 && LifeLeft <= MothMove) {
+            Moving = 1;
+          }
 
           if (LifeLeft !== MothObj.LifeLeft) {
             hasChanged = true;
           }
 
-          return { ...MothObj, LifeLeft };
+          return { ...MothObj, LifeLeft, Moving };
         }).filter((MothObj) => MothObj.LifeLeft > 0);
 
         if (NewMoths.length !== OldMoths.length) hasChanged = true;
@@ -444,8 +450,9 @@ export default function Game() {
             key={Moth.ID}
             className={cl(styles, "moth")}
             style={{
-              left: `${Moth.X * 100}%`,
-              top: `${Moth.Y * 100}%`,
+              transition: `left ${MothMove}s linear, top ${MothMove}s linear`,
+              left: `${Moth.Moving == 0 ? Moth.X * 100 : 0}%`,
+              top: `${Moth.Moving == 0 ? Moth.Y * 100 : 0}%`,
               height: `${MothScale}%`,
             }}
           />
