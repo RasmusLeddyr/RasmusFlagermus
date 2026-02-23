@@ -20,12 +20,13 @@ export default function Game() {
   const ScanLife = 3;
   const BatScale = 3;
   const BugScale = 2;
-  const GameTime = 120;
+  const GameTime = 180;
   const WingStep = 0.125;
   const WingPause = 0.25;
 
   // START VALUES [
   const [Scans, setScans] = useState([]);
+  const [Moths, setMoths] = useState([]);
   const [ViewSize, setViewSize] = useState({ W: 0, H: 0 });
   const [BatPos, setBatPos] = useState({ X: 0.5, Y: 0.5 });
   const [BugPos, setBugPos] = useState({ X: 0.5, Y: 0.75 });
